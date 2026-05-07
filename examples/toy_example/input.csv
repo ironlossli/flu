@@ -1,3 +1,0 @@
-xyz_path,solvent_smiles,solvent_name,lambda_abs,lambda_em
-examples/toy_example/xyz_files/benzene.xyz,C1CCOC1,THF,255.0,290.0
-examples/toy_example/xyz_files/benzene.xyz,C1COCCO1,Dioxane,255.0,290.0

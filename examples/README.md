@@ -14,7 +14,7 @@ After training a model (see main README), run:
 ```bash
 python scripts/run_prediction.py \
     --checkpoint checkpoints/train/best.pt \
-    --input examples/toy_example/input.csv \
+    --input examples/input.csv \
     --output predictions.csv \
     --target abs \
     --device cpu
