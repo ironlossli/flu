@@ -30,7 +30,7 @@ These components are concatenated into a unified edge feature vector and injecte
 
 ### Supported Backbones
 
-- EGNN, SchNet, PaiNN, LEFTNet, LEFTNet V3, Equiformer V1, Equiformer V2, C-GNN
+- EGNN, SchNet, PaiNN, LEFTNet, Equiformer V1, Equiformer V2
 
 ### Tasks
 
