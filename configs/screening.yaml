@@ -1,0 +1,29 @@
+# ==========================================
+# 🧪 Screening Workflow Configuration
+# ==========================================
+
+# 1. 筛选设置 (Step 1)
+selection:
+  input_csv: "data/raw/unique_smiles.csv" # 待筛选分子列表
+  num_samples: 100                        # 筛选样本量
+
+# 2. 预测设置 (Step 2)
+prediction:
+  # 预测模型权重 (请确保路径存在)
+  model_ckpt: "checkpoints/predictor_abs/ehc_egnn_abs_default_20251128_154304/best.pt" 
+  
+  # 目标属性 (abs 或 em)
+  target: "abs"
+  
+  # 溶剂环境
+  solvent_name: "THF"
+  solvent_smiles: "C1CCOC1"
+  
+  # 推理参数
+  device: "cuda"                       # "cuda" or "cpu"
+  batch_size: 8
+
+# 3. 输出设置
+output:
+  root_dir: "outputs/screening_demo"   # 结果保存根目录
+  keep_xyz_files: false                # 是否保留中间生成的 .xyz 文件 (False 节省空间)

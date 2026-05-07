@@ -1,0 +1,87 @@
+name: ehc_leftnet
+use_backbone_dropout: true
+backbone_dropout: 0.1
+builder: spectra.models.ehc:build_ehc_leftnet   # 若你使用统一 builder，请改成对应的工厂函数
+
+# select backbone
+
+# (为与数据管线保持一致；LEFTNet 仅需 Z，仍沿用现有输入占位)
+solute_node_in: 12
+solute_edge_in: 4
+
+# LEFTNet backbone
+leftnet_hidden: 256          # 对应 LEFTNet hidden_channels
+leftnet_layers: 4            # 等变消息块层数（message+FTE 为一层）
+leftnet_num_radial: 32       # RBF 个数
+leftnet_cutoff: 5.0          # 构图/soft cutoff 半径（单位与坐标一致）
+
+# solvent encoder
+solvent_node_in: 14
+solvent_edge_in: 7
+z_dim: 128
+solvent_layers: 3
+
+# heads
+head_hidden: 256
+energy_space: false
+
+# 深层 FiLM 注入（建议对 LEFTNet 开启，对标量通道 s 做 FiLM）
+film_every: 2
+film_layers: [4]                 # 若想稀疏注入，可给出层号列表，如 [2,4]
+film_beta_only: false
+film_scale: 0.3
+
+optimizer:
+  type: adamw
+  lr: 1.0e-4
+  weight_decay: 1.0e-5
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+
+scheduler:
+  type: cosine            # 推荐使用 cosine 配合 warmup
+  warmup_epochs: 20       # 前 10 个 epoch 用于热身
+  warmup_start_factor: 0.01 # 初始学习率为 4.0e-6 (即 4.0e-4 * 0.01)
+  # Cosine 参数
+  t_max: 120             # 通常设置为总 epochs 数 (trainer.epochs)
+  eta_min: 1.0e-6         # 最小学习率，防止衰减到 0
+
+loss:
+  type: mse
+
+trainer:
+  epochs: 120
+  output_dir: checkpoints
+  seed: 43
+  amp: false
+  precision: bf16
+  device: cuda
+  allow_tf32: true
+  cudnn_benchmark: true
+  deterministic: false
+  grad_clip_norm: 0.5
+  accumulate_steps: 1
+  val_every: 1
+  log_every_steps: 50
+  resume_from:
+  checkpoint:
+    monitor: val/loss
+    mode: min
+    save_top_k: 1
+    save_last: true
+    filename: "{epoch}-{val_loss:.4f}"
+  early_stop:
+    enabled: true
+    patience: 20
+    min_delta: 0.0
+    mode: min
+
+  devices: 2
+loader:
+  batch_size: 16
+  num_workers: 8
+  pin_memory: true
+  shuffle: true
+  drop_last: false
+  prefetch_factor: 2
+  persistent_workers: true

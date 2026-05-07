@@ -1,0 +1,76 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*Zone.Identifier
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Checkpoints and model weights
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.pkl
+
+# Data (private/large)
+data/raw/
+data/processed/
+raw/
+processed/
+predict_data/
+
+# Outputs
+outputs/
+runs/
+wandb/
+*.log
+*.tmp
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+
+# LaTeX artifacts
+*.aux
+*.bbl
+*.blg
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf
+
+# NumPy arrays
+*.npy
+*.npz
+
+# Claude / AI assistant
+.claude/
+AGENTS.md
+gemini_doc/

@@ -1,0 +1,43 @@
+name: ablation_v4_no_vnode
+use_backbone_dropout: true
+backbone_dropout: 0.1
+builder: spectra.models.ehc:build_ehc_egnn
+solute_node_in: 12
+solute_edge_in: 4
+egnn_hidden: 128
+egnn_layers: 6
+egnn_cutoff: 5.0
+solvent_node_in: 14
+solvent_edge_in: 7
+z_dim: 128
+solvent_layers: 3
+film_layers: [6]
+film_beta_only: false
+film_scale: 0.3
+head_hidden: 256
+energy_space: false
+egnn_use_edge_film: true
+
+# Ablation: Disable Virtual Node
+use_moments: true
+use_global: true
+use_virtual_node: false
+mgil_use_nonlocal: false
+mgil_nonlocal_heads: 4
+mgil_nonlocal_features: 64
+mgil_nonlocal_dropout: 0.0
+mgil_nonlocal_scale: 1.0
+
+optimizer: {type: adamw, lr: 5.0e-4, weight_decay: 1.0e-5}
+scheduler: {type: cosine, warmup_epochs: 30, t_max: 200, eta_min: 5.0e-5}
+loss: {type: mse}
+trainer:
+  epochs: 200
+  output_dir: checkpoints/ablation
+  seed: 42
+  amp: true
+  precision: bf16
+  device: cuda
+  early_stop: {enabled: false}
+  checkpoint: {monitor: val/loss, mode: min}
+loader: {batch_size: 32, num_workers: 8}

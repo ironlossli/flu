@@ -1,0 +1,5 @@
+# train.yaml
+target: abs
+
+diversity_loss:
+  lambda: 0.1 

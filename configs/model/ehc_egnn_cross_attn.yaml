@@ -1,0 +1,96 @@
+name: ehc_egnn
+use_backbone_dropout: true
+backbone_dropout: 0.1
+builder: spectra.models.ehc:build_ehc_egnn
+
+# EGNN backbone
+solute_node_in: 12
+solute_edge_in: 4
+egnn_hidden: 128
+egnn_layers: 6
+egnn_cutoff: 5.0
+
+# solvent encoder
+solvent_node_in: 14
+solvent_edge_in: 7
+z_dim: 128
+solvent_layers: 3
+
+# FiLM 策略（统一透传）
+# film_every: 
+film_layers: [6]
+film_beta_only: false
+film_scale: 0.3
+
+# heads
+head_hidden: 256
+energy_space: false
+
+egnn_use_edge_film: true
+
+# EGNN Config (Optimized)
+use_moments: false
+use_global: true
+use_virtual_node: true
+mgil_use_nonlocal: false
+mgil_nonlocal_heads: 4
+mgil_nonlocal_features: 64
+mgil_nonlocal_dropout: 0.0
+mgil_nonlocal_scale: 1.0
+
+optimizer:
+  type: adamw               # code only uses lr/weight_decay; type kept for clarity
+  lr: 5.0e-4
+  weight_decay: 1.0e-5
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+
+scheduler:
+  type: cosine            # 主策略：余弦退火
+  warmup_epochs: 20       # 前 20 个 epoch 线性热身
+  warmup_start_factor: 0.01 # 初始 LR 为 base_lr * 0.01
+  t_max: 200              # 总周期（通常设为总 Epoch 数）
+  eta_min: 5.0e-5         # 退火到的最小学习率
+
+loss:
+  type: mse
+
+trainer:
+  epochs: 200
+  output_dir: checkpoints
+  seed: 42
+  amp: true              # use autocast
+  precision: bf16        # bf16 | fp16 | fp32
+  device: cuda           # auto | cuda | cpu
+  allow_tf32: true
+  cudnn_benchmark: true
+  deterministic: false
+
+  grad_clip_norm: 1.0    # or null to disable
+  accumulate_steps: 1
+  val_every: 1           # validate every N epochs
+  log_every_steps: 50
+
+  resume_from:
+  checkpoint:
+    monitor: val/loss
+    mode: min
+    save_top_k: 1
+    save_last: true
+    filename: "{epoch}-{val_loss:.4f}"
+
+  early_stop:
+    enabled: false
+    patience: 15
+    min_delta: 0.0
+    mode: min
+
+  devices: 1
+loader:
+  batch_size: 64
+  num_workers: 8
+  pin_memory: true
+  shuffle: true
+  drop_last: false
+  prefetch_factor: 2
+  persistent_workers: true

@@ -1,0 +1,87 @@
+name: ehc_equiformer
+builder: spectra.models.ehc:build_ehc_equiformer
+solute_node_in: 12
+solute_edge_in: 4
+solvent_node_in: 14
+solvent_edge_in: 7
+z_dim: 128
+solvent_layers: 3
+eqf_variant: gat
+eqf_radius: 5.0
+eqf_layers: 6
+eqf_num_basis: 128
+eqf_basis_type: gaussian
+eqf_irreps_node_embedding: "128x0e+64x1e+32x2e"
+eqf_irreps_feature: "512x0e"
+eqf_irreps_head: "32x0e+16x1o+8x2e"
+eqf_irreps_mlp_mid: "128x0e+64x1e+32x2e"
+eqf_num_heads: 4
+eqf_norm_layer: layer
+eqf_class_map: "12"
+eqf_max_atom_type: 12
+eqf_query_layer_index: 1
+eqf_alpha_drop: 0.2
+eqf_proj_drop: 0.0
+eqf_out_drop: 0.0
+eqf_drop_path_rate: 0.0
+mgil_use_nonlocal: false
+mgil_nonlocal_heads: 4
+mgil_nonlocal_features: 64
+mgil_nonlocal_dropout: 0.0
+mgil_nonlocal_scale: 0.1
+film_layers:
+- 6
+film_beta_only: false
+film_scale: 0.3
+head_hidden: 256
+energy_space: false
+optimizer:
+  type: adamw
+  lr: 0.0005
+  weight_decay: 1.0e-05
+  betas:
+  - 0.9
+  - 0.999
+  eps: 1.0e-08
+scheduler:
+  type: cosine
+  warmup_epochs: 20
+  warmup_start_factor: 0.01
+  t_max: 200
+  eta_min: 5.0e-05
+loss:
+  type: mse
+trainer:
+  epochs: 200
+  output_dir: checkpoints
+  seed: 42
+  amp: true
+  precision: bf16
+  device: cuda
+  allow_tf32: true
+  cudnn_benchmark: true
+  deterministic: false
+  grad_clip_norm: 1.0
+  accumulate_steps: 1
+  val_every: 1
+  log_every_steps: 50
+  checkpoint:
+    monitor: val/loss
+    mode: min
+    save_top_k: 1
+    save_last: true
+    filename: "{epoch}-{val_loss:.4f}"
+  early_stop:
+    enabled: false
+    patience: 15
+    min_delta: 0.0
+    mode: min
+  devices: 1
+loader:
+  batch_size: 64
+  num_workers: 8
+  pin_memory: true
+  shuffle: true
+  drop_last: false
+  prefetch_factor: 2
+  persistent_workers: true

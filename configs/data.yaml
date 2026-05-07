@@ -1,0 +1,44 @@
+# Data config expected by create_dataloaders(data_config=dc, train_config=tc, split_name=..., target=...)
+
+root: ..
+
+raw:
+  table: raw/ori_data.csv
+  xyz_dir: raw/solute/xyz_files
+  # Column names in the raw CSV
+  smiles_col: SMILES
+  solvent_col: Solvent
+  num_col: NUM              # optional; used to derive xyz filenames if present
+  xyz_file_col: xyz_file    # optional; if present, will be used to locate XYZ
+  # Map task to raw target column names
+  target_cols:
+    abs: Absorption_max_nm
+    em: Emission_max_nm
+
+processed:
+  # Task-specific parquet files
+  abs_parquet: processed/flu/data_abs.parquet
+  em_parquet: processed/flu/data_em.parquet
+  splits_dir: processed/flu/random
+
+
+features:
+  solute:
+    node_format: onehot12
+
+
+
+splitting:
+  strategy: random          # current builder implements random; others are ignored
+  train_ratio: 0.7
+  valid_ratio: 0.1
+  test_ratio: 0.2
+  random_seed: 42
+
+
+
+generation:
+  generate_xyz_if_missing: true
+
+
+

@@ -1,0 +1,124 @@
+# configs/model/ehc_equiformer_v2.yaml
+name: ehc_equiformer_v2
+use_backbone_dropout: true
+backbone_dropout: 0.1
+builder: spectra.models.ehc:build_ehc_equiformer_v2
+
+# （保持与其他骨干一致的输入维度声明）
+solute_node_in: 12
+solute_edge_in: 4
+
+# 溶剂编码器
+solvent_node_in: 14
+solvent_edge_in: 7
+z_dim: 128
+solvent_layers: 3
+
+# EquiformerV2 超参 —— 对齐 EHCModel 的 eq2_* 接口
+eq2_max_neighbors: 500
+eq2_cutoff: 5.0
+eq2_max_num_elements: 100
+eq2_layers: 6
+eq2_sphere_channels: 128
+eq2_attn_hidden_channels: 128
+eq2_num_heads: 8
+eq2_attn_alpha_channels: 32
+eq2_attn_value_channels: 16
+eq2_ffn_hidden_channels: 512
+eq2_norm_type: rms_norm_sh
+eq2_lmax_list: [2]
+eq2_mmax_list: [2]
+eq2_grid_resolution:
+eq2_num_sphere_samples: 128
+eq2_edge_channels: 128
+eq2_use_atom_edge_embedding: true
+eq2_share_atom_edge_embedding: false
+eq2_use_m_share_rad: false
+eq2_distance_function: gaussian
+eq2_attn_activation: scaled_silu
+eq2_use_s2_act_attn: false
+eq2_use_attn_renorm: true
+eq2_ffn_activation: scaled_silu
+eq2_use_gate_act: false
+eq2_use_grid_mlp: false
+eq2_use_sep_s2_act: true
+eq2_alpha_drop: 0.1
+eq2_drop_path_rate: 0.05
+eq2_proj_drop: 0.0
+eq2_weight_init: normal
+mgil_use_nonlocal: false
+mgil_nonlocal_heads: 4
+mgil_nonlocal_features: 64
+mgil_nonlocal_dropout: 0.0
+mgil_nonlocal_scale: 0.1
+
+# 预测头
+head_hidden: 256
+energy_space: false
+
+# 新增：深层 FiLM 注入（EquiformerV2 推荐开启）
+film_every: 3             # NEW
+film_layers:              # NEW
+film_beta_only: false     # NEW
+film_scale: 0.3           # NEW
+
+optimizer:
+  type: adamw               # code only uses lr/weight_decay; type kept for clarity
+  lr: 4.0e-4
+  weight_decay: 1.0e-5
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+
+scheduler:
+  type: cosine
+  warmup_epochs: 10
+  warmup_start_factor: 0.01
+  t_max: 50
+  eta_min: 5.0e-5
+
+loss:
+  type: mse
+
+trainer:
+  epochs: 100
+  output_dir: checkpoints
+  seed: 44
+    # new: precision/perf
+  amp: true              # use autocast
+  precision: bf16        # bf16 | fp16 | fp32
+  device: cuda           # auto | cuda | cpu
+  allow_tf32: true
+  cudnn_benchmark: true
+  deterministic: false
+
+  # new: training loop controls
+  grad_clip_norm: 1.0    # or null to disable
+  accumulate_steps: 1
+  val_every: 1           # validate every N epochs
+  log_every_steps: 50
+
+  # new: checkpoint & resume
+  resume_from:
+  checkpoint:
+    monitor: val/loss
+    mode: min
+    save_top_k: 1
+    save_last: true
+    filename: "{epoch}-{val_loss:.4f}"
+
+  # new: early stopping
+  early_stop:
+    enabled: true
+    patience: 15
+    min_delta: 0.0
+    mode: min
+
+  devices: 1
+loader:
+  batch_size: 24
+  num_workers: 8
+  pin_memory: true
+  shuffle: true
+  drop_last: false
+  prefetch_factor: 2
+  persistent_workers: true
